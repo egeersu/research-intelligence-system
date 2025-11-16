@@ -1,0 +1,6 @@
+duckdb==1.4.0
+requests
+python-dateutil
+pandas
+tenacity
+cloudscraper
