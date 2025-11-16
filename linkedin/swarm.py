@@ -10,7 +10,7 @@ sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from storage.db import get_connection
 
 # Swarm API configuration
-API_KEY = "WXPkNo2Bc15lJtFyBVcTD7VjYJuMuoxK183oM8PG"
+API_KEY = "INSERT API KEY"
 SWARM_API_BASE = "https://bee.theswarm.com/v2"
 
 def clean_institution_name(institution: str) -> str:

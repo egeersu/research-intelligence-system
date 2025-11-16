@@ -46,7 +46,6 @@ If you have time and want to expand on it, here are a few more ideas, you can pi
 - Author → LinkedIn Matching: Implement or design a way to connect an author to a potential LinkedIn profile using name, affiliation, and field of work. Explain your approach — e.g. heuristic matching, AI-assisted entity resolution, or API queries, along with how you’d disambiguate similar names or institutions. It doesn’t have to be perfect; what matters is how you reason through the matching process.
 
 
-
 If you have any questions or issues, feel free to reach out, and if you need extension, please do reach out. Good luck and looking forward to seeing what you will come up with.
 
 Best,
