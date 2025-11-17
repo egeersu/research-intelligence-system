@@ -24,6 +24,23 @@ def get_connection(db_path=None):
     
     return duckdb.connect(db_path)
 
+def load_rankings_data(con):
+    """Load QS rankings from CSV if table is empty"""
+    csv_path = Path(__file__).parent.parent / "static" / "qs_rankings.csv"
+    
+    # Check if already loaded
+    count = con.execute("SELECT COUNT(*) FROM institution_rankings").fetchone()[0]
+    if count > 0:
+        return
+    
+    # Load CSV
+    con.execute(f"""
+        COPY institution_rankings 
+        FROM '{csv_path}' 
+        (HEADER TRUE, DELIMITER ',')
+    """)
+    print("✅ Loaded QS rankings data")
+
 
 def init_schema(con=None):
     """
@@ -45,11 +62,13 @@ def init_schema(con=None):
     # Execute schema
     con.execute(schema_sql)
     
+    # Load rankings data
+    load_rankings_data(con)
+    
     if close_after:
         con.close()
     
     print("✅ Database schema initialized")
-
 
 def reset_db(db_path=None):
     """
@@ -70,7 +89,8 @@ def reset_db(db_path=None):
         'paper_authors',
         'paper_topics',
         'enrichment_status',
-        'raw_papers'
+        'raw_papers',
+        'institution_rankings'
     ]
     
     for table in tables:

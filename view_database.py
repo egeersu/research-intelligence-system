@@ -85,43 +85,6 @@ def inspect_database():
     print("=" * 100 + "\n")
     
     con.close()
-
-
-def custom_query(query, description="Custom Query"):
-    """Execute a custom SQL query and print results"""
-    con = get_connection()
     
-    print("\n" + "=" * 80)
-    print(f"🔍 {description}")
-    print("=" * 80 + "\n")
-    
-    try:
-        rows = con.execute(query).fetchall()
-        columns = [desc[0] for desc in con.description]
-        
-        # Print results
-        for row in rows:
-            for col, val in zip(columns, row):
-                print(f"{col}: {val}")
-            print("-" * 80)
-        
-        print(f"\nTotal: {len(rows)} rows\n")
-        
-    except Exception as e:
-        print(f"❌ Error: {e}\n")
-    
-    con.close()
-
-
 if __name__ == "__main__":
     inspect_database()
-    
-    # Example: Check for duplicate DOIs
-    custom_query(
-        query="""
-            SELECT doi, author_id, author_name, orcid, institution_name
-            from paper_authors
-            LIMIT 20
-        """,
-        description=""
-    )

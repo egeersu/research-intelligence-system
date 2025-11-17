@@ -1,7 +1,3 @@
-Hi Ege,
-
-Hope you’re doing well. I really enjoyed our conversation last week and I’m happy to move you to the next step.
-
 You’re tasked with building a research intelligence system that continuously analyzes papers from bioRxiv or medRxiv.
 
 Please push your work to a Git repo by next Monday, and include a README explaining your architecture, reasoning, and how to run the project. You are not expected to build a frontend for this, focus on the backend and data part of it.

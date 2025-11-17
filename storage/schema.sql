@@ -43,6 +43,13 @@ CREATE TABLE IF NOT EXISTS paper_citation_snapshots (
     PRIMARY KEY (doi, snapshot_date)
 );
 
+CREATE TABLE IF NOT EXISTS institution_rankings (
+    institution_name TEXT PRIMARY KEY,
+    ranking INTEGER NOT NULL
+);
+
+CREATE INDEX IF NOT EXISTS idx_rankings ON institution_rankings(ranking);
+
 CREATE INDEX IF NOT EXISTS idx_papers_published_date ON raw_papers(published_date);
 CREATE INDEX IF NOT EXISTS idx_papers_category ON raw_papers(category);
 CREATE INDEX IF NOT EXISTS idx_papers_server ON raw_papers(server);
@@ -57,3 +64,5 @@ CREATE INDEX IF NOT EXISTS idx_authors_name ON paper_authors(author_name);
 CREATE INDEX IF NOT EXISTS idx_authors_institution ON paper_authors(institution_name);
 
 CREATE INDEX IF NOT EXISTS idx_snapshots_latest ON paper_citation_snapshots(doi, snapshot_date DESC);
+
+CREATE INDEX IF NOT EXISTS idx_rankings ON institution_rankings(ranking);

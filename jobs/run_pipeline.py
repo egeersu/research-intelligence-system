@@ -32,7 +32,7 @@ def run_pipeline(server='biorxiv', days_back=7, stages='all', enrich_batch_size=
     """
     start_time = datetime.now()
     
-    print_header(f"🚀 Starting Hummingbird Pipeline - {start_time.strftime('%Y-%m-%d %H:%M')}")
+    print_header(f"🚀 Starting Research Intelligence System Pipeline - {start_time.strftime('%Y-%m-%d %H:%M')}")
     
     if stages == 'all':
         run_stages = ['ingest', 'enrich', 'citations']
