@@ -3,7 +3,6 @@ aiohttp==3.13.2
 aiosignal==1.4.0
 async-timeout==5.0.1
 attrs==25.4.0
-beautifulsoup4==4.14.2
 certifi==2025.10.5
 charset-normalizer==3.4.4
 cloudscraper==1.2.71
@@ -29,4 +28,4 @@ urllib3==2.5.0
 yarl==1.22.0
 jupyterlab==4.4.10
 sentence-transformers==5.1.2
-matplotlib==3.10.7
+matplotlib==3.9.4

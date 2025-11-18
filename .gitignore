@@ -42,3 +42,7 @@ Thumbs.db
 # Temporary files
 *.tmp
 .cache/
+__MACOSX/
+
+# Jupyter Notebook checkpoints
+.ipynb_checkpoints/

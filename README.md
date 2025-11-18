@@ -1,4 +1,4 @@
-## Setup
+## Environment Setup
 
 Create a virtual environment:
 ```bash
@@ -15,36 +15,83 @@ Install dependencies:
 pip3 install -r requirements.txt
 ```
 
-Run the project:
+## Database Setup
+If you'd like to quickly download a complete database (goes back 1000 days) [Recommended]
 ```bash
-python3 main.py
+python3 download_data.py
 ```
+
+If you want to start from scratch:
+```bash
+python3 -m jobs.run_pipeline 
+```
+
+If you want to delete the database:
+```bash
+python3 reset.py 
+```
+
+## Query Layer
+
 Run analysis notebook:
 ```bash
 jupyter lab
 ```
 
+## DuckDB
 
-## Data Model & Storage
-Table schemas available
-Coverage on openalex
-I used DuckDB because
-You can start from scratch or use ... to get 1000 days of data. (x mb)
+We're using DuckDB because it's basically "SQLite for analytics", an easily sharable single-file database that's fast at the kinds of queries we need (aggregations, joins, filtering). 
 
+No server to run, just a `.db` file. Bonus: it natively supports arrays, so we can store embeddings directly without tricks.
 
-## Scheduled Ingestion
-Open alex
-decisions made : recheck logic
+The database holds papers, topics, authors, citation snapshots over time, and institution rankings.
 
-## Query & Insight Layer
-The main script supports the following methods:
+You can check out the tables:
+```bash
+python3 view_database.py
+```
 
-## Traction & Impact
-It was not possible to collect historical citation data within a week, so I'm creating a fake table with the same schema as citation snapshot, simulating how it would grow if allowed to run for a while.
-The main metric is momentum.
+## OpenAlex
 
-## Linkedin Matching
-Sadly it is very hard to scrape google/linkedin without using third party services. I used [Swarm](https://www.theswarm.com/product/data-api) which supports searching linkedin profiles through name and institutuions. Combining the Author's full name and institutuon coming from OpenAlex yields good results. I verify that their instutition shows up within their experience to confirm its the same person. Does not work well if their university on linkedin is in their native language or spelled differently - that would require finding the native spelling of the uni + fuzzy matching. 
+The raw bioRxiv/medRxiv data has messy author info - no institutions per author, missing first names, inconsistent formatting. 
 
-## Expert Graph
-Sadly no time left, but I'd have...
+OpenAlex gives us clean, structured data:
+- Authors with standardized institutions and ORCIDs
+- Curated research topics
+- Citation counts
+
+It's a free, open catalog with an API that's actually pleasant to use.
+
+**Coverage**
+- 99.5% of papers successfully enriched with OpenAlex data
+- 97.8% have research topics
+- 99.5% have author information
+- 72% have at least one author with institutional affiliation
+
+## Jobs
+
+The pipeline runs in 4 stages, coordinated through an `enrichment_status` table that tracks what each paper needs:
+
+1. **Ingest** - Fetch papers from bioRxiv/medRxiv APIs
+   - Handles new papers and version updates (newer versions update existing records)
+   - Creates an `enrichment_status` entry for each new paper
+
+2. **Enrich** - Add topics, authors, and initial citation counts from OpenAlex
+   - Queries `enrichment_status` for papers where `openalex_enriched = FALSE`
+   - Batches DOIs and fetches from OpenAlex
+   - Marks papers as enriched and calculates `next_citation_check` date
+
+3. **Track Citations** - Update citation counts over time
+   - Queries `enrichment_status` for papers where `next_citation_check <= today`
+   - Smart scheduling: weekly checks for papers <90 days old, showing growth (>4 new citations), or popular (>50 citations), otherwise every 16 weeks.
+   - Stores snapshots in `paper_citation_snapshots` to track growth over time
+
+4. **Vectorize** - Generate embeddings for topic similarity search
+   - Finds topics without embeddings and generates them in batch
+   - Uses sentence-transformers (all-MiniLM-L6-v2)
+
+**Key orchestration logic:**
+- Each stage only processes what needs processing (incremental)
+- Failed enrichments get retry cooldowns (30 days)
+- Citation checks are scheduled based on paper age, growth rate, and current citations
+- Everything is idempotent (safe to rerun) and resilient (retries API failures)
