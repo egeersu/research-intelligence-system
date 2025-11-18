@@ -116,3 +116,13 @@ The query layer uses vector embeddings for semantic search - you can search by c
 - Velocity (citations/month), smoothed velocity (3-month avg), and growth rate
 
 See `main.ipynb` for examples!
+
+## QS Rankings Data
+
+To identify top institutions, used QS World University Rankings for biological sciences (top 30):
+
+1. Extracted potential OpenAlex institution matches via fuzzy matching against QS names
+2. Used Perplexity to verify matches and remove false positives (e.g., "Harvard Medical School" ✓, "Harvard Street Clinic" ✗)
+3. Final list saved to `static/qs_rankings.csv`
+
+This powers the `top_institution` flag in expert scoring and institution filtering in queries.
