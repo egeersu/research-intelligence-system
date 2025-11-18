@@ -147,7 +147,6 @@ def mark_enrichment_attempt(doi, con=None):
     if close_after:
         con.close()
 
-
 def update_citation_check_schedule(doi, next_check_date, con=None):
     """Update when a paper should be checked next for citations."""
     close_after = False
@@ -165,7 +164,7 @@ def update_citation_check_schedule(doi, next_check_date, con=None):
         con.close()
 
 def count_papers_needing_enrichment(retry_days=30, con=None):
-    """Count how many papers need enrichment."""
+    """Count how many papers need enrichment. Just for logging."""
     close_after = False
     if con is None:
         con = get_connection()
@@ -186,3 +185,43 @@ def count_papers_needing_enrichment(retry_days=30, con=None):
         con.close()
     
     return result[0]
+
+
+def get_topics_needing_embeddings(con=None):
+    """Get distinct topics that don't have embeddings yet."""
+    close_after = False
+    if con is None:
+        con = get_connection()
+        close_after = True
+    
+    results = con.execute("""
+        SELECT DISTINCT pt.topic_name
+        FROM paper_topics pt
+        LEFT JOIN topic_embeddings te ON pt.topic_name = te.topic_name
+        WHERE te.topic_name IS NULL
+    """).fetchall()
+    
+    if close_after:
+        con.close()
+    
+    return [r[0] for r in results]
+
+
+def store_topic_embedding(topic_name, embedding, con=None):
+    """Store a topic embedding vector."""
+    close_after = False
+    if con is None:
+        con = get_connection()
+        close_after = True
+    
+    if hasattr(embedding, 'astype'):
+        embedding = embedding.astype('float32')
+    
+    con.execute("""
+        INSERT OR REPLACE INTO topic_embeddings
+        (topic_name, embedding)
+        VALUES (?, ?)
+    """, (topic_name, embedding))
+    
+    if close_after:
+        con.close()

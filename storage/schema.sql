@@ -48,6 +48,12 @@ CREATE TABLE IF NOT EXISTS institution_rankings (
     ranking INTEGER NOT NULL
 );
 
+CREATE TABLE IF NOT EXISTS topic_embeddings (
+    topic_name TEXT PRIMARY KEY,
+    embedding FLOAT[384],
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
 CREATE INDEX IF NOT EXISTS idx_rankings ON institution_rankings(ranking);
 
 CREATE INDEX IF NOT EXISTS idx_papers_published_date ON raw_papers(published_date);

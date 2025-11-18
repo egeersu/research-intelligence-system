@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 """Download and extract the pre-built database."""
 
 import os

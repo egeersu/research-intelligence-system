@@ -8,17 +8,9 @@ from storage.queries import count_papers_needing_enrichment
 from jobs.ingest_biorxiv import ingest_papers
 from jobs.enrich_openalex import enrich_papers
 from jobs.track_citations import track_citations
-
+from jobs.vectorize_topics import vectorize_topics
 
 EMAIL = 'egeersu@gmail.com'
-
-
-def print_header(message):
-    """Print a nice header"""
-    print("\n" + "=" * 80)
-    print(f"  {message}")
-    print("=" * 80)
-
 
 def run_pipeline(server='biorxiv', days_back=7, stages='all', enrich_batch_size=500):
     """
@@ -32,10 +24,10 @@ def run_pipeline(server='biorxiv', days_back=7, stages='all', enrich_batch_size=
     """
     start_time = datetime.now()
     
-    print_header(f"🚀 Starting Research Intelligence System Pipeline - {start_time.strftime('%Y-%m-%d %H:%M')}")
+    print(f"🚀 Starting Research Intelligence System Pipeline - {start_time.strftime('%Y-%m-%d %H:%M')}")
     
     if stages == 'all':
-        run_stages = ['ingest', 'enrich', 'citations']
+        run_stages = ['ingest', 'enrich', 'citations', 'vectorize']
     else:
         run_stages = [s.strip() for s in stages.split(',')]
     
@@ -45,11 +37,16 @@ def run_pipeline(server='biorxiv', days_back=7, stages='all', enrich_batch_size=
     init_schema(con)
     
     if 'ingest' in run_stages:
-        print_header("📥 Stage 1: Ingest Papers")
-        ingest_papers(server=server, days_back=days_back, con=con)
+        print("📥 Stage 1: Ingest Papers")
+        if server == 'all':
+            for srv in ['biorxiv', 'medrxiv']:
+                print(f"\n🔄 Ingesting from {srv}")
+                ingest_papers(server=srv, days_back=days_back, con=con)
+        else:
+            ingest_papers(server=server, days_back=days_back, con=con)
     
     if 'enrich' in run_stages:
-        print_header("🔬 Stage 2: Enrich with OpenAlex")
+        print("🔬 Stage 2: Enrich with OpenAlex")
         
         total_needing = count_papers_needing_enrichment(con=con)
         
@@ -67,17 +64,19 @@ def run_pipeline(server='biorxiv', days_back=7, stages='all', enrich_batch_size=
                     break
                 
                 run_num += 1
-                print(f"\n{'─' * 80}")
                 print(f"  Enrichment Run {run_num} ({remaining} papers remaining)")
-                print(f"{'─' * 80}")
                 
                 enrich_papers(email=EMAIL, batch_size=enrich_batch_size, con=con)
     
     if 'citations' in run_stages:
-        print_header("📊 Stage 3: Track Citation Growth")
+        print("📊 Stage 3: Track Citation Growth")
         track_citations(email=EMAIL, batch_size=500, con=con)
     
-    print_header("📈 Pipeline Summary")
+    if 'vectorize' in run_stages:
+        print("🔢 Stage 4: Vectorize Topics")
+        vectorize_topics(con=con)
+    
+    print("📈 Pipeline Summary")
     
     stats = get_stats(con)
     
@@ -102,16 +101,16 @@ def main():
         description='Run the Hummingbird data pipeline',
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog="""
-Examples:
-  python -m jobs.run_pipeline
-  python -m jobs.run_pipeline --stages ingest
-  python -m jobs.run_pipeline --server medrxiv
-  python -m jobs.run_pipeline --days-back 30
-  python -m jobs.run_pipeline --enrich-batch-size 1000
+            Examples:
+            python -m jobs.run_pipeline
+            python -m jobs.run_pipeline --stages ingest
+            python -m jobs.run_pipeline --server all
+            python -m jobs.run_pipeline --days-back 30
+            python -m jobs.run_pipeline --enrich-batch-size 1000
         """
     )
     
-    parser.add_argument('--server', default='biorxiv', choices=['biorxiv', 'medrxiv'])
+    parser.add_argument('--server', default='all', choices=['biorxiv', 'medrxiv'])
     parser.add_argument('--days-back', type=int, default=7)
     parser.add_argument('--stages', default='all')
     parser.add_argument('--enrich-batch-size', type=int, default=500)
@@ -124,7 +123,6 @@ Examples:
         stages=args.stages,
         enrich_batch_size=args.enrich_batch_size
     )
-
 
 if __name__ == "__main__":
     main()

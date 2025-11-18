@@ -30,7 +30,6 @@ def track_citations(email, batch_size=500, con=None):
     dois = [p['doi'] for p in papers]
     
     print(f"\n📊 Tracking citations for {len(dois)} papers")
-    print("=" * 70)
     
     client = OpenAlexClient(email=email)
     raw_papers = client.get_papers_by_dois(dois, verbose=True)
@@ -70,22 +69,20 @@ def track_citations(email, batch_size=500, con=None):
                 
                 if growth > 4:
                     high_growth_count += 1
-                    print(f"  🔥 High growth: {doi} (+{growth} citations)")
+                    print(f"🔥 High growth: {doi} (+{growth} citations)")
                 
             else:
                 skipped_count += 1
                 
         except Exception as e:
-            print(f"  ⚠️  Error tracking {doi}: {e}")
+            print(f"⚠️  Error tracking {doi}: {e}")
             skipped_count += 1
     
-    print("\n" + "=" * 70)
     print(f"✅ Citation tracking complete!")
-    print(f"   Updated: {updated_count}")
-    print(f"   High growth papers: {high_growth_count}")
-    print(f"   Skipped/errors: {skipped_count}")
-    print("=" * 70)
-    
+    print(f"Updated: {updated_count}")
+    print(f"High growth papers: {high_growth_count}")
+    print(f"Skipped/errors: {skipped_count}")
+
     if close_after:
         con.close()
 

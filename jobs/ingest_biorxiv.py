@@ -22,7 +22,7 @@ def fetch_papers_from_api(server, start_date, end_date, cursor=0):
     return response.json()
 
 
-def ingest_papers(server='biorxiv', days_back=7, con=None):
+def ingest_papers(server, days_back=7, con=None):
     """
     Ingest papers from bioRxiv/medRxiv.
     
@@ -48,7 +48,7 @@ def ingest_papers(server='biorxiv', days_back=7, con=None):
     total_skipped = 0
     
     while True:
-        print(f"  Fetching cursor {cursor}...", end=" ")
+        print(f"Fetching cursor {cursor}...", end=" ")
         
         try:
             data = fetch_papers_from_api(server, start_date, end_date, cursor)
@@ -102,10 +102,10 @@ def ingest_papers(server='biorxiv', days_back=7, con=None):
                     total_inserted += 1
                     
                 except Exception as e:
-                    print(f"    ⚠️  Error inserting {doi}: {e}")
+                    print(f"⚠️ Error inserting {doi}: {e}")
                     
             elif new_version > existing[0]:
-                # Newer version - UPDATE
+                # Newer version of the same DOI - UPDATE existing record
                 try:
                     con.execute("""
                         UPDATE raw_papers
@@ -133,7 +133,7 @@ def ingest_papers(server='biorxiv', days_back=7, con=None):
                     total_updated += 1
                     
                 except Exception as e:
-                    print(f"    ⚠️  Error updating {doi}: {e}")
+                    print(f"⚠️ Error updating {doi}: {e}")
             else:
                 total_skipped += 1
         
@@ -147,12 +147,10 @@ def ingest_papers(server='biorxiv', days_back=7, con=None):
         else:
             break
     
-    print("\n" + "=" * 70)
     print(f"✅ Ingestion complete!")
-    print(f"   New papers: {total_inserted}")
-    print(f"   Updated papers: {total_updated}")
-    print(f"   Skipped (old versions): {total_skipped}")
-    print("=" * 70)
+    print(f"New papers: {total_inserted}")
+    print(f"Updated papers: {total_updated}")
+    print(f"Skipped (old versions): {total_skipped}")
     
     if close_after:
         con.close()
