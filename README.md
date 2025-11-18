@@ -21,7 +21,7 @@ If you'd like to quickly download a complete database (goes back 1000 days) [Rec
 python3 download_data.py
 ```
 
-If you want to start from scratch:
+If you want to start from scratch, the pipeline will create the database for you:
 ```bash
 python3 -m jobs.run_pipeline 
 ```
@@ -95,6 +95,11 @@ The pipeline runs in 4 stages, coordinated through an `enrichment_status` table 
 - Failed enrichments get retry cooldowns (30 days)
 - Citation checks are scheduled based on paper age, growth rate, and current citations
 - It is safe to rerun. You can set python3 -m jobs.run_pipeline as a cron job if needed.
+
+Try it out:
+```bash
+python3 -m jobs.run_pipeline 
+```
 
 ## Query Layer
 The query layer uses vector embeddings for semantic search - you can search by concept, not just exact keyword matches.
