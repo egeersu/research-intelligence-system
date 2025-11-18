@@ -35,7 +35,7 @@ python3 reset.py
 
 Run analysis notebook:
 ```bash
-jupyter lab
+jupyter lab main.ipynb
 ```
 
 ## DuckDB
@@ -94,4 +94,25 @@ The pipeline runs in 4 stages, coordinated through an `enrichment_status` table 
 - Each stage only processes what needs processing (incremental)
 - Failed enrichments get retry cooldowns (30 days)
 - Citation checks are scheduled based on paper age, growth rate, and current citations
-- Everything is idempotent (safe to rerun) and resilient (retries API failures)
+- It is safe to rerun. You can set python3 -m jobs.run_pipeline as a cron job if needed.
+
+## Query Layer
+The query layer uses vector embeddings for semantic search - you can search by concept, not just exact keyword matches.
+
+**Core queries:**
+- `search_topics(keyword)` - Find similar research topics using cosine similarity
+- `search_papers_by_topic(topic)` - Find papers on similar topics, ranked by citations
+- `find_experts_with_scores(topic)` - Rank authors by expertise using a weighted score:
+  - 35% citation impact (log-scaled)
+  - 25% paper count
+  - 15% recency (published in last 6 months?)
+  - 15% consistency (active over time?)
+  - 10% top institution (QS top-30)
+
+**LinkedIn matching**:
+- Uses Swarm API to find LinkedIn profiles given author name + institution
+
+**Citation tracking** (demonstrated with simulated data):
+- Velocity (citations/month), smoothed velocity (3-month avg), and growth rate
+
+See `main.ipynb` for examples!
